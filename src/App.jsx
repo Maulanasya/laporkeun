@@ -23,6 +23,8 @@ import Footer from "./components/Footer";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import ForgotPassword from "./components/ForgotPassword"; 
+import VerifyCode from "./components/VerifyCode";
+import NewPassword from "./components/NewPassword";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -113,6 +115,14 @@ export default function App() {
 
   if (pathname === "/lupa-password") {
     return <ForgotPassword />;
+  }
+
+  if (pathname === "/verifikasi-kode") {
+    return <VerifyCode />;
+  }
+
+  if (pathname === "/buat-sandi-baru") {
+    return <NewPassword />;
   }
 
   const handleTrackTicket = (e) => {

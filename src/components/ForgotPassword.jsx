@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { ArrowRight, ArrowLeft, ShieldCheck } from "lucide-react";
+import { ArrowRight, ArrowLeft, ShieldCheck, CheckCircle2 } from "lucide-react";
 
 import forgotIllustration from "../assets/illustrations/forgotpassword.png";
 
@@ -18,12 +18,16 @@ export default function ForgotPassword() {
     }
 
     setError("");
+    // Mengubah state menjadi true untuk menampilkan notifikasi cantik di dalam card
     setIsSubmitted(true);
-    console.log({ email });
   };
 
   const goToLogin = () => {
     window.location.href = "/login";
+  };
+
+  const goToVerify = () => {
+    window.location.href = "/verifikasi-kode";
   };
 
   return (
@@ -170,20 +174,38 @@ export default function ForgotPassword() {
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="p-4 rounded-2xl bg-cyan-50 border border-cyan-100 text-center space-y-3"
+                      className="p-5 rounded-2xl bg-cyan-50/80 border border-cyan-100 text-center space-y-4"
                     >
-                      <p className="text-sm font-semibold text-[#063B4A]">
-                        Instruksi Berhasil Dikirim!
-                      </p>
-                      <p className="text-xs text-slate-600">
-                        Silakan periksa kotak masuk email Anda di <span className="font-medium text-[#1597A8]">{email}</span> untuk langkah selanjutnya.
-                      </p>
+                      <div className="w-12 h-12 rounded-full bg-cyan-100 text-[#1597A8] flex items-center justify-center mx-auto">
+                        <CheckCircle2 size={26} />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-bold text-[#063B4A]">
+                          Kode OTP Sudah Terkirim!
+                        </p>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          Kode OTP sudah terkirim melalui email Anda, tolong cek email Anda di{" "}
+                          <span className="font-semibold text-[#1597A8]">{email}</span>.
+                        </p>
+                      </div>
+
+                      <motion.button
+                        type="button"
+                        onClick={goToVerify}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.985 }}
+                        className="w-full h-11 rounded-xl bg-[#063B4A] text-white text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors hover:bg-[#032D39]"
+                      >
+                        Masukkan Kode Verifikasi
+                        <ArrowRight size={15} />
+                      </motion.button>
+
                       <button
                         type="button"
                         onClick={() => setIsSubmitted(false)}
-                        className="text-xs font-semibold text-[#1597A8] hover:underline cursor-pointer pt-1"
+                        className="text-[11px] font-medium text-slate-500 hover:text-[#1597A8] transition-colors cursor-pointer block mx-auto pt-1"
                       >
-                        Kirim ulang ke email lain
+                        Ganti email atau kirim ulang
                       </button>
                     </motion.div>
                   ) : (

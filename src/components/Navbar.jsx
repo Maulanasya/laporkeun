@@ -344,7 +344,10 @@ export default function Navbar() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <nav
+      <motion.nav
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: EASE_OUT }}
         className={`
           fixed
           top-0
@@ -364,9 +367,11 @@ export default function Navbar() {
           <div className="h-[78px] flex items-center justify-between">
             
             {/* Logo Component */}
-            <button
+            <motion.button
               type="button"
               onClick={goToHome}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
               className="
                 flex
                 items-center
@@ -402,19 +407,8 @@ export default function Navbar() {
                 <div className="text-[15px] font-bold text-brand-primary">
                   LaporKeun!
                 </div>
-                <div
-                  className="
-                    text-[7px]
-                    tracking-[0.12em]
-                    text-slate-400
-                    font-semibold
-                    mt-1
-                  "
-                >
-                  RUANG AMAN UNTUK BERSUARA
-                </div>
               </div>
-            </button>
+            </motion.button>
 
             {/* Landing Page Desktop Navigation */}
             {isHomePage && (
@@ -559,7 +553,7 @@ export default function Navbar() {
             </motion.div>
           )}
         </AnimatePresence>
-      </nav>
+      </motion.nav>
     </MotionConfig>
   );
 }
