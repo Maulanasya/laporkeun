@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import {
   Eye,
@@ -6,8 +6,8 @@ import {
   ArrowRight,
   ArrowLeft,
   ShieldCheck,
+  AlertCircle,
 } from "lucide-react";
-
 import loginIllustration from "../assets/illustrations/login.png";
 
 export default function Login() {
@@ -15,20 +15,59 @@ export default function Login() {
   const [nisn, setNisn] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  useEffect(() => {
+    const savedNisn = localStorage.getItem("remembered_nisn");
+    if (savedNisn) {
+      setNisn(savedNisn);
+      setRemember(true);
+    }
+  }, []);
+
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
 
     if (!nisn.trim() || !password.trim()) {
-      alert("Silakan isi NISN dan password terlebih dahulu.");
+      setErrorMessage("Silakan isi NISN dan password terlebih dahulu.");
       return;
     }
 
-    console.log({
-      nisn,
-      password,
-      remember,
-    });
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ nisn, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrorMessage(data.message || "NISN atau password salah / tidak terdaftar.");
+        setIsLoading(false);
+        return;
+      }
+
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      if (remember) {
+        localStorage.setItem("remembered_nisn", nisn);
+      } else {
+        localStorage.removeItem("remembered_nisn");
+      }
+
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Gagal terhubung ke server:", error);
+      setErrorMessage("Tidak dapat terhubung ke server backend. Pastikan server Node.js aktif.");
+      setIsLoading(false);
+    }
   };
 
   const goToRegister = () => {
@@ -41,8 +80,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[#F7FAFA] text-slate-900 font-['Poppins']">
-      
-      {/* Login Section */}
       <main className="relative min-h-screen overflow-hidden flex items-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -68,7 +105,7 @@ export default function Login() {
         <div className="relative w-full max-w-7xl mx-auto px-6 py-12 md:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             
-            {/* Illustration Section */}
+            {/* Bagian Ilustrasi */}
             <motion.div
               initial={{ opacity: 0, x: -40 }}
               animate={{ opacity: 1, x: 0 }}
@@ -129,7 +166,7 @@ export default function Login() {
               </motion.div>
             </motion.div>
 
-            {/* Form Section */}
+            {/* Bagian Form */}
             <motion.div
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
@@ -179,6 +216,17 @@ export default function Login() {
                     </div>
                   </div>
 
+                  {errorMessage && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2.5 text-red-600 text-xs font-medium"
+                    >
+                      <AlertCircle size={16} className="shrink-0" />
+                      <span>{errorMessage}</span>
+                    </motion.div>
+                  )}
+
                   <form onSubmit={handleLogin} className="space-y-5">
                     <div className="space-y-2">
                       <label
@@ -191,12 +239,25 @@ export default function Login() {
                         <input
                           id="nisn"
                           type="text"
+                          inputMode="numeric"
+                          maxLength={10}
                           value={nisn}
-                          onChange={(e) => setNisn(e.target.value)}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                            setNisn(value);
+                            if (errorMessage) setErrorMessage("");
+                          }}
                           placeholder="Masukkan NISN"
-                          className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50/70 text-sm text-slate-700 placeholder:text-slate-400 outline-none transition-all focus:bg-white focus:border-[#1597A8] focus:ring-4 focus:ring-[#1597A8]/10"
+                          className={`w-full h-12 px-4 rounded-xl border bg-slate-50/70 text-sm text-slate-700 placeholder:text-slate-400 outline-none transition-all focus:bg-white ${
+                            errorMessage
+                              ? "border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-400/10"
+                              : "border-slate-200 focus:border-[#1597A8] focus:ring-4 focus:ring-[#1597A8]/10"
+                          }`}
                         />
                       </div>
+                      <p className="text-[10px] text-slate-400 pl-1">
+                        Masukkan 10 digit NISN terdaftar Anda.
+                      </p>
                     </div>
 
                     <div className="space-y-2">
@@ -211,9 +272,16 @@ export default function Login() {
                           id="password"
                           type={showPassword ? "text" : "password"}
                           value={password}
-                          onChange={(e) => setPassword(e.target.value)}
+                          onChange={(e) => {
+                            setPassword(e.target.value);
+                            if (errorMessage) setErrorMessage("");
+                          }}
                           placeholder="Masukkan password"
-                          className="w-full h-12 px-4 pr-12 rounded-xl border border-slate-200 bg-slate-50/70 text-sm text-slate-700 placeholder:text-slate-400 outline-none transition-all focus:bg-white focus:border-[#1597A8] focus:ring-4 focus:ring-[#1597A8]/10"
+                          className={`w-full h-12 px-4 pr-12 rounded-xl border bg-slate-50/70 text-sm text-slate-700 placeholder:text-slate-400 outline-none transition-all focus:bg-white ${
+                            errorMessage
+                              ? "border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-400/10"
+                              : "border-slate-200 focus:border-[#1597A8] focus:ring-4 focus:ring-[#1597A8]/10"
+                          }`}
                         />
 
                         <button
@@ -233,6 +301,9 @@ export default function Login() {
                           )}
                         </button>
                       </div>
+                      <p className="text-[10px] text-slate-400 pl-1">
+                        Pastikan kombinasi sandi akun sudah benar.
+                      </p>
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -277,6 +348,7 @@ export default function Login() {
 
                     <motion.button
                       type="submit"
+                      disabled={isLoading}
                       whileHover={{
                         scale: 1.01,
                         boxShadow:
@@ -285,10 +357,10 @@ export default function Login() {
                       whileTap={{
                         scale: 0.985,
                       }}
-                      className="w-full h-12 rounded-xl bg-[#063B4A] text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors hover:bg-[#032D39]"
+                      className="w-full h-12 rounded-xl bg-[#063B4A] text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors hover:bg-[#032D39] disabled:opacity-50"
                     >
-                      Masuk
-                      <ArrowRight size={17} />
+                      {isLoading ? "Memproses..." : "Masuk"}
+                      {!isLoading && <ArrowRight size={17} />}
                     </motion.button>
                   </form>
 

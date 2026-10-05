@@ -8,8 +8,8 @@ import {
   ArrowRight,
   ArrowLeft,
   ShieldCheck,
+  AlertCircle,
 } from "lucide-react";
-
 import registerIllustration from "../assets/illustrations/register.png";
 
 const KELAS_GROUPS = [
@@ -230,16 +230,12 @@ function KelasSelect({ value, onSelect, hasError, describedBy }) {
             onMouseDown={(e) => e.preventDefault()}
             className="absolute left-0 right-0 top-full mt-2 z-30 max-h-[320px] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_24px_60px_-20px_rgba(6,59,74,0.28)]"
           >
-            {KELAS_GROUPS.map((group, groupIndex) => (
+            {KELAS_GROUPS.map((group) => (
               <div
                 key={group.label}
                 role="group"
                 aria-label={group.label}
-                className={
-                  groupIndex > 0
-                    ? "mt-1 pt-1 border-t border-slate-100"
-                    : ""
-                }
+                className="mt-1 pt-1 border-t border-slate-100 first:mt-0 first:pt-0 first:border-0"
               >
                 <p className="px-3 pt-2 pb-1 text-[10px] font-bold tracking-[0.14em] uppercase text-slate-400">
                   {group.label}
@@ -333,6 +329,8 @@ export default function Register() {
 
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [serverError, setServerError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const setField = (name, value) => {
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -340,6 +338,7 @@ export default function Register() {
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
+    if (serverError) setServerError("");
   };
 
   const handleChange = (e) => {
@@ -350,8 +349,9 @@ export default function Register() {
     );
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
+    setServerError("");
 
     const found = validate(form);
     setErrors(found);
@@ -363,8 +363,38 @@ export default function Register() {
       return;
     }
 
-    const { password, ...safeData } = form;
-    console.log(safeData);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nisn: form.nisn,
+          nama_lengkap: form.nama,
+          email: form.email,
+          kelas: form.kelas,
+          password: form.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setServerError(data.message || "Gagal melakukan registrasi.");
+        setIsLoading(false);
+        return;
+      }
+
+      alert("Registrasi berhasil! Silakan masuk.");
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Terjadi kesalahan:", error);
+      setServerError("Tidak dapat terhubung ke server backend.");
+      setIsLoading(false);
+    }
   };
 
   const goToLogin = () => {
@@ -373,8 +403,6 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-[#F7FAFA] text-slate-900 font-['Poppins']">
-      
-      {/* Register Section */}
       <main className="relative min-h-screen overflow-hidden flex items-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -400,7 +428,7 @@ export default function Register() {
         <div className="relative w-full max-w-7xl mx-auto px-6 py-12 md:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             
-            {/* Illustration Section */}
+            {/* Bagian Ilustrasi */}
             <motion.div
               initial={{ opacity: 0, x: -40 }}
               animate={{ opacity: 1, x: 0 }}
@@ -461,7 +489,7 @@ export default function Register() {
               </motion.div>
             </motion.div>
 
-            {/* Form Section */}
+            {/* Bagian Form */}
             <motion.div
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
@@ -508,6 +536,17 @@ export default function Register() {
                       </p>
                     </div>
                   </div>
+
+                  {serverError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2.5 text-red-600 text-xs font-medium"
+                    >
+                      <AlertCircle size={16} className="shrink-0" />
+                      <span>{serverError}</span>
+                    </motion.div>
+                  )}
 
                   <form
                     onSubmit={handleRegister}
@@ -621,6 +660,7 @@ export default function Register() {
 
                     <motion.button
                       type="submit"
+                      disabled={isLoading}
                       whileHover={{
                         scale: 1.01,
                         boxShadow:
@@ -629,10 +669,10 @@ export default function Register() {
                       whileTap={{
                         scale: 0.985,
                       }}
-                      className="w-full h-12 mt-2 rounded-xl bg-[#063B4A] text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors hover:bg-[#032D39]"
+                      className="w-full h-12 mt-2 rounded-xl bg-[#063B4A] text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors hover:bg-[#032D39] disabled:opacity-50"
                     >
-                      Daftar
-                      <ArrowRight size={17} />
+                      {isLoading ? "Memproses..." : "Daftar"}
+                      {!isLoading && <ArrowRight size={17} />}
                     </motion.button>
                   </form>
 

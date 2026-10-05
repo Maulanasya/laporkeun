@@ -1,25 +1,50 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { ArrowRight, ArrowLeft, ShieldCheck, CheckCircle2 } from "lucide-react";
-
+import { ArrowRight, ArrowLeft, ShieldCheck, CheckCircle2, AlertCircle } from "lucide-react";
 import forgotIllustration from "../assets/illustrations/forgotpassword.png";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleForgot = (e) => {
+  const handleForgot = async (e) => {
     e.preventDefault();
+    setError("");
 
     if (!email.trim() || !/^\S+@\S+\.\S+$/.test(email.trim())) {
       setError("Masukkan alamat email yang valid.");
       return;
     }
 
-    setError("");
-    // Mengubah state menjadi true untuk menampilkan notifikasi cantik di dalam card
-    setIsSubmitted(true);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Email tidak terdaftar di sistem.");
+        setIsLoading(false);
+        return;
+      }
+
+      sessionStorage.setItem("reset_email", email);
+      setIsLoading(false);
+      setIsSubmitted(true);
+    } catch (err) {
+      console.error("Gagal terhubung ke server:", err);
+      setError("Tidak dapat terhubung ke server backend. Pastikan server aktif.");
+      setIsLoading(false);
+    }
   };
 
   const goToLogin = () => {
@@ -32,8 +57,6 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-screen bg-[#F7FAFA] text-slate-900 font-['Poppins']">
-      
-      {/* Forgot Password Section */}
       <main className="relative min-h-screen overflow-hidden flex items-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -59,7 +82,7 @@ export default function ForgotPassword() {
         <div className="relative w-full max-w-7xl mx-auto px-6 py-12 md:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             
-            {/* Illustration Component */}
+            {/* Bagian Ilustrasi */}
             <motion.div
               initial={{ opacity: 0, x: -40 }}
               animate={{ opacity: 1, x: 0 }}
@@ -120,7 +143,7 @@ export default function ForgotPassword() {
               </motion.div>
             </motion.div>
 
-            {/* Form Component */}
+            {/* Bagian Form */}
             <motion.div
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
@@ -169,6 +192,13 @@ export default function ForgotPassword() {
                       </p>
                     </div>
                   </div>
+
+                  {error && !isSubmitted && (
+                    <div className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2.5 text-red-600 text-xs font-medium">
+                      <AlertCircle size={16} className="shrink-0" />
+                      <span>{error}</span>
+                    </div>
+                  )}
 
                   {isSubmitted ? (
                     <motion.div
@@ -236,15 +266,11 @@ export default function ForgotPassword() {
                             }`}
                           />
                         </div>
-                        {error && (
-                          <p id="email-error" className="text-[11px] text-red-500">
-                            {error}
-                          </p>
-                        )}
                       </div>
 
                       <motion.button
                         type="submit"
+                        disabled={isLoading}
                         whileHover={{
                           scale: 1.01,
                           boxShadow: "0 14px 30px -10px rgba(21,151,168,0.45)",
@@ -252,10 +278,10 @@ export default function ForgotPassword() {
                         whileTap={{
                           scale: 0.985,
                         }}
-                        className="w-full h-12 rounded-xl bg-[#063B4A] text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors hover:bg-[#032D39]"
+                        className="w-full h-12 rounded-xl bg-[#063B4A] text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors hover:bg-[#032D39] disabled:opacity-50"
                       >
-                        Lanjut
-                        <ArrowRight size={17} />
+                        {isLoading ? "Memproses..." : "Lanjut"}
+                        {!isLoading && <ArrowRight size={17} />}
                       </motion.button>
                     </form>
                   )}

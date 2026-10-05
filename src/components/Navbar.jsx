@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
-import { ArrowRight, Menu, X } from "lucide-react";
-
+import { ArrowRight, Menu, X, User, LogOut } from "lucide-react";
 import logoImage from "../assets/logo.png";
 
 const NAV_LINKS = [
@@ -9,6 +8,13 @@ const NAV_LINKS = [
   { id: "fitur", label: "Fitur" },
   { id: "cara-kerja", label: "Cara Kerja" },
   { id: "faq", label: "FAQ" },
+];
+
+const LOGGED_IN_LINKS = [
+  { id: "beranda", label: "Beranda", path: "/" },
+  { id: "form-laporan", label: "Form Laporan", path: "/form-laporan" },
+  { id: "riwayat-laporan", label: "Riwayat Laporan", path: "/riwayat-laporan" },
+  { id: "chat-psikolog", label: "Chat Psikolog", path: "/chat-psikolog" },
 ];
 
 const SECTION_IDS = ["fitur", "cara-kerja", "faq"];
@@ -33,20 +39,8 @@ function DesktopNavLink({
       onBlur={onLeave}
       aria-current={isActive ? "true" : undefined}
       className={`
-        relative
-        px-4
-        py-2
-        rounded-full
-        text-sm
-        font-medium
-        cursor-pointer
-        transition-colors
-        duration-300
-        ${
-          isActive
-            ? "text-brand-tertiary"
-            : "text-slate-600 hover:text-brand-tertiary"
-        }
+        relative px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors duration-300
+        ${isActive ? "text-brand-tertiary" : "text-slate-600 hover:text-brand-tertiary"}
       `}
     >
       {isHovered && (
@@ -87,22 +81,8 @@ function MobileNavLink({ label, isActive, index, onClick }) {
       }}
       whileTap={{ scale: 0.98 }}
       className={`
-        relative
-        w-full
-        text-left
-        px-4
-        py-3
-        rounded-xl
-        text-sm
-        font-medium
-        cursor-pointer
-        transition-colors
-        duration-300
-        ${
-          isActive
-            ? "bg-cyan-50 text-brand-tertiary"
-            : "text-slate-600 hover:bg-slate-50 hover:text-brand-tertiary"
-        }
+        relative w-full text-left px-4 py-3 rounded-xl text-sm font-medium cursor-pointer transition-colors duration-300
+        ${isActive ? "bg-cyan-50 text-brand-tertiary" : "text-slate-600 hover:bg-slate-50 hover:text-brand-tertiary"}
       `}
     >
       {isActive && (
@@ -127,24 +107,7 @@ function CtaButton({ label, onClick, mobile = false }) {
       whileTap={{ scale: 0.96 }}
       transition={{ type: "spring", stiffness: 400, damping: 22 }}
       className={`
-        group
-        inline-flex
-        items-center
-        justify-center
-        gap-2
-        px-5
-        py-3
-        bg-brand-tertiary
-        text-white
-        text-sm
-        font-semibold
-        shadow-md
-        shadow-cyan-900/10
-        hover:bg-brand-tertiaryHover
-        hover:shadow-lg
-        cursor-pointer
-        transition-[background-color,box-shadow]
-        duration-300
+        group inline-flex items-center justify-center gap-2 px-5 py-3 bg-brand-tertiary text-white text-sm font-semibold shadow-md shadow-cyan-900/10 hover:bg-brand-tertiaryHover hover:shadow-lg cursor-pointer transition-[background-color,box-shadow] duration-300
         ${mobile ? "w-full rounded-xl" : "rounded-full"}
       `}
     >
@@ -166,17 +129,7 @@ function OutlineButton({ label, onClick, mobile = false }) {
       whileTap={{ scale: 0.96 }}
       transition={{ type: "spring", stiffness: 400, damping: 22 }}
       className={`
-        text-sm
-        font-semibold
-        text-brand-primary
-        border
-        border-slate-200
-        hover:bg-slate-50
-        hover:border-brand-tertiary
-        hover:text-brand-tertiary
-        cursor-pointer
-        transition-[background-color,border-color,color]
-        duration-300
+        text-sm font-semibold text-brand-primary border border-slate-200 hover:bg-slate-50 hover:border-brand-tertiary hover:text-brand-tertiary cursor-pointer transition-[background-color,border-color,color] duration-300
         ${mobile ? "w-full px-4 py-3 rounded-xl" : "px-5 py-2.5 rounded-full"}
       `}
     >
@@ -190,15 +143,16 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeId, setActiveId] = useState("beranda");
   const [hoveredId, setHoveredId] = useState(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const isAutoScrolling = useRef(false);
   const autoScrollTimer = useRef(null);
 
   const pathname = window.location.pathname;
-
+  const isLoggedIn = Boolean(localStorage.getItem("user"));
   const isRegisterPage = pathname === "/register";
   const isHomePage = pathname === "/";
-  const hasMenu = isHomePage || isRegisterPage;
+  const hasMenu = isHomePage || isRegisterPage || isLoggedIn;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -228,7 +182,6 @@ export default function Navbar() {
     };
 
     handleScroll();
-
     window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
@@ -269,22 +222,19 @@ export default function Navbar() {
 
   const goToLogin = () => {
     setIsMobileOpen(false);
-
-    if (pathname === "/login") {
-      return;
-    }
-
+    if (pathname === "/login") return;
     window.location.href = "/login";
   };
 
   const goToRegister = () => {
     setIsMobileOpen(false);
-
-    if (pathname === "/register") {
-      return;
-    }
-
+    if (pathname === "/register") return;
     window.location.href = "/register";
+  };
+
+  const confirmLogout = () => {
+    localStorage.removeItem("user");
+    window.location.href = "/";
   };
 
   const scrollToSection = (sectionId) => {
@@ -298,11 +248,9 @@ export default function Navbar() {
       }
 
       const section = document.getElementById(sectionId);
-
       if (!section) return;
 
       lockActive(sectionId);
-
       section.scrollIntoView({
         behavior: "smooth",
         block: "start",
@@ -315,32 +263,8 @@ export default function Navbar() {
       goToHome();
       return;
     }
-
     scrollToSection(id);
   };
-
-  useEffect(() => {
-    if (pathname !== "/") return;
-
-    const target = sessionStorage.getItem("scrollTarget");
-
-    if (!target) return;
-
-    sessionStorage.removeItem("scrollTarget");
-
-    const scrollTimer = setTimeout(() => {
-      const section = document.getElementById(target);
-
-      if (section) {
-        section.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }
-    }, 200);
-
-    return () => clearTimeout(scrollTimer);
-  }, [pathname]);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -349,13 +273,7 @@ export default function Navbar() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: EASE_OUT }}
         className={`
-          fixed
-          top-0
-          left-0
-          right-0
-          z-50
-          transition-[background-color,box-shadow,backdrop-filter]
-          duration-300
+          fixed top-0 left-0 right-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-300
           ${
             isScrolled
               ? "bg-white/90 backdrop-blur-xl shadow-sm border-b border-slate-100"
@@ -366,36 +284,16 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="h-[78px] flex items-center justify-between">
             
-            {/* Logo Component */}
+            {/* Logo */}
             <motion.button
               type="button"
               onClick={goToHome}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
-              className="
-                flex
-                items-center
-                gap-3
-                group
-                cursor-pointer
-                shrink-0
-              "
+              className="flex items-center gap-3 group cursor-pointer shrink-0"
               aria-label="Kembali ke Beranda"
             >
-              <div
-                className="
-                  w-10
-                  h-10
-                  rounded-xl
-                  flex
-                  items-center
-                  justify-center
-                  overflow-hidden
-                  transition-all
-                  duration-300
-                  group-hover:scale-105
-                "
-              >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:scale-105">
                 <img
                   src={logoImage}
                   alt="Logo LaporKeun"
@@ -410,8 +308,42 @@ export default function Navbar() {
               </div>
             </motion.button>
 
-            {/* Landing Page Desktop Navigation */}
-            {isHomePage && (
+            {/* Desktop Navigation */}
+            {isLoggedIn ? (
+              <div className="hidden md:flex items-center gap-8">
+                <div className="flex items-center gap-2">
+                  {LOGGED_IN_LINKS.map((link) => (
+                    <a
+                      key={link.id}
+                      href={link.path}
+                      className="px-4 py-2 rounded-full text-sm font-medium text-slate-600 hover:text-brand-tertiary transition-colors"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => alert("Halaman Profil")}
+                    className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                    aria-label="Profil"
+                  >
+                    <User size={18} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowLogoutConfirm(true)}
+                    className="w-10 h-10 rounded-xl bg-brand-tertiary text-white flex items-center justify-center hover:bg-brand-tertiaryHover transition-colors cursor-pointer shadow-sm"
+                    aria-label="Keluar"
+                  >
+                    <LogOut size={18} />
+                  </button>
+                </div>
+              </div>
+            ) : isHomePage ? (
               <>
                 <div
                   className="hidden md:flex items-center gap-1"
@@ -435,39 +367,22 @@ export default function Navbar() {
                   <CtaButton label="Daftar" onClick={goToRegister} />
                 </div>
               </>
-            )}
-
-            {/* Register Desktop Navigation */}
-            {isRegisterPage && (
+            ) : isRegisterPage ? (
               <div className="hidden md:flex items-center gap-3">
                 <span className="text-sm text-slate-500">
                   Sudah punya akun?
                 </span>
                 <CtaButton label="Masuk" onClick={goToLogin} />
               </div>
-            )}
+            ) : null}
 
-            {/* Mobile Menu Toggle Button */}
+            {/* Mobile Toggle Button */}
             {hasMenu && (
               <motion.button
                 type="button"
                 onClick={() => setIsMobileOpen((prev) => !prev)}
                 whileTap={{ scale: 0.92 }}
-                className="
-                  md:hidden
-                  w-10
-                  h-10
-                  rounded-xl
-                  border
-                  border-slate-200
-                  flex
-                  items-center
-                  justify-center
-                  text-brand-primary
-                  hover:bg-slate-50
-                  transition-colors
-                  cursor-pointer
-                "
+                className="md:hidden w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-brand-primary hover:bg-slate-50 transition-colors cursor-pointer"
                 aria-label={isMobileOpen ? "Tutup menu" : "Buka menu"}
                 aria-expanded={isMobileOpen}
               >
@@ -498,17 +413,47 @@ export default function Navbar() {
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: EASE_OUT }}
-              className="
-                md:hidden
-                overflow-hidden
-                border-t
-                border-slate-100
-                bg-white
-                shadow-lg
-              "
+              className="md:hidden overflow-hidden border-t border-slate-100 bg-white shadow-lg"
             >
               <div className="px-6 py-5 space-y-2">
-                {isHomePage && (
+                {isLoggedIn ? (
+                  <>
+                    {LOGGED_IN_LINKS.map((link) => (
+                      <a
+                        key={link.id}
+                        href={link.path}
+                        className="block px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-cyan-50 hover:text-brand-tertiary transition-colors"
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                    <div className="pt-2 border-t border-slate-100 mt-3 space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsMobileOpen(false);
+                          alert("Halaman Profil");
+                        }}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors"
+                      >
+                        <User size={16} />
+                        Profil
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsMobileOpen(false);
+                          setShowLogoutConfirm(true);
+                        }}
+                        className="w-full px-4 py-3 rounded-xl bg-brand-tertiary text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-brand-tertiaryHover transition-colors"
+                      >
+                        <LogOut size={16} />
+                        Keluar
+                      </button>
+                    </div>
+                  </>
+                ) : isHomePage ? (
                   <>
                     {NAV_LINKS.map((link, index) => (
                       <MobileNavLink
@@ -533,9 +478,7 @@ export default function Navbar() {
                       />
                     </div>
                   </>
-                )}
-
-                {isRegisterPage && (
+                ) : isRegisterPage ? (
                   <>
                     <div className="px-4 py-2">
                       <p className="text-xs text-slate-500">
@@ -548,12 +491,57 @@ export default function Navbar() {
                       onClick={goToLogin}
                     />
                   </>
-                )}
+                ) : null}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.nav>
+
+      {/* Modal Konfirmasi Keluar */}
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl border border-slate-100 text-center space-y-5"
+            >
+              <div className="w-14 h-14 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto">
+                <LogOut size={26} />
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-slate-800">
+                  Keluar dari Akun?
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Apakah kamu yakin ingin keluar? Kamu perlu masuk kembali untuk mengakses fitur pelaporan dan chat psikolog.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="w-full h-11 rounded-xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Tidak
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmLogout}
+                  className="w-full h-11 rounded-xl bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition-colors cursor-pointer shadow-md shadow-red-500/20"
+                >
+                  Ya, Keluar
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </MotionConfig>
   );
 }

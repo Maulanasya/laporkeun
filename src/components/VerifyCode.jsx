@@ -1,12 +1,12 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { motion } from "motion/react";
-import { ArrowRight, ArrowLeft, ShieldCheck } from "lucide-react";
-
+import { ArrowRight, ArrowLeft, ShieldCheck, AlertCircle } from "lucide-react";
 import verifyIllustration from "../assets/illustrations/verify.png";
 
 export default function VerifyCode() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef([]);
 
   const handleChange = (value, index) => {
@@ -17,7 +17,6 @@ export default function VerifyCode() {
     setOtp(newOtp);
     if (error) setError("");
 
-    // Pindah ke input berikutnya secara otomatis jika terisi
     if (value && index < 5) {
       inputRefs.current[index + 1].focus();
     }
@@ -29,7 +28,7 @@ export default function VerifyCode() {
     }
   };
 
-  const handleVerify = (e) => {
+  const handleVerify = async (e) => {
     e.preventDefault();
     const code = otp.join("");
 
@@ -39,11 +38,63 @@ export default function VerifyCode() {
     }
 
     setError("");
-    window.location.href = "/buat-sandi-baru";
+    setIsLoading(true);
+
+    const email = sessionStorage.getItem("reset_email");
+
+    if (!email) {
+      setError("Sesi email tidak ditemukan. Silakan ulangi proses lupa password.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp: code }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Kode OTP tidak valid.");
+        setIsLoading(false);
+        return;
+      }
+
+      sessionStorage.setItem("reset_otp", code);
+      setIsLoading(false);
+      window.location.href = "/buat-sandi-baru";
+    } catch (err) {
+      console.error("Gagal terhubung ke server:", err);
+      setError("Tidak dapat terhubung ke server backend.");
+      setIsLoading(false);
+    }
   };
 
-  const handleResend = () => {
-    alert("Kode verifikasi baru telah dikirim ulang ke email Anda.");
+  const handleResend = async () => {
+    const email = sessionStorage.getItem("reset_email");
+    if (!email) {
+      alert("Sesi email tidak ditemukan.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        alert(`Kode OTP baru telah dikirim ulang! (Debug OTP: ${data.debugOtp})`);
+      } else {
+        alert("Gagal mengirim ulang kode.");
+      }
+    } catch (error) {
+      alert("Terjadi kesalahan jaringan.");
+    }
   };
 
   const goToForgotPassword = () => {
@@ -52,8 +103,6 @@ export default function VerifyCode() {
 
   return (
     <div className="min-h-screen bg-[#F7FAFA] text-slate-900 font-['Poppins']">
-      
-      {/* Verify Section */}
       <main className="relative min-h-screen overflow-hidden flex items-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -79,7 +128,7 @@ export default function VerifyCode() {
         <div className="relative w-full max-w-7xl mx-auto px-6 py-12 md:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             
-            {/* Illustration Component */}
+            {/* Bagian Ilustrasi */}
             <motion.div
               initial={{ opacity: 0, x: -40 }}
               animate={{ opacity: 1, x: 0 }}
@@ -140,7 +189,7 @@ export default function VerifyCode() {
               </motion.div>
             </motion.div>
 
-            {/* Form Component */}
+            {/* Bagian Form */}
             <motion.div
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
@@ -188,8 +237,15 @@ export default function VerifyCode() {
                     </div>
                   </div>
 
+                  {error && (
+                    <div className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2.5 text-red-600 text-xs font-medium">
+                      <AlertCircle size={16} className="shrink-0" />
+                      <span>{error}</span>
+                    </div>
+                  )}
+
                   <form onSubmit={handleVerify} noValidate className="space-y-6">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-1.5 sm:gap-2">
                       {otp.map((data, index) => (
                         <input
                           key={index}
@@ -200,7 +256,7 @@ export default function VerifyCode() {
                           value={data}
                           onChange={(e) => handleChange(e.target.value, index)}
                           onKeyDown={(e) => handleKeyDown(e, index)}
-                          className={`w-12 h-14 md:w-14 md:h-16 text-center text-xl font-bold rounded-xl border outline-none transition-all focus:bg-white focus:ring-4 ${
+                          className={`w-10 h-12 sm:w-12 sm:h-14 md:w-14 md:h-16 text-center text-lg sm:text-xl font-bold rounded-xl border outline-none transition-all focus:bg-white focus:ring-4 ${
                             error
                               ? "border-red-300 focus:border-red-400 focus:ring-red-400/10 bg-slate-50/70 text-red-500"
                               : "border-slate-200 bg-slate-50/70 text-slate-700 focus:border-[#1597A8] focus:ring-[#1597A8]/10"
@@ -208,12 +264,6 @@ export default function VerifyCode() {
                         />
                       ))}
                     </div>
-
-                    {error && (
-                      <p className="text-[11px] text-red-500 text-center">
-                        {error}
-                      </p>
-                    )}
 
                     <div className="text-xs text-slate-500 text-center flex items-center justify-center gap-1">
                       <span>Tidak menerima kode?</span>
@@ -228,6 +278,7 @@ export default function VerifyCode() {
 
                     <motion.button
                       type="submit"
+                      disabled={isLoading}
                       whileHover={{
                         scale: 1.01,
                         boxShadow: "0 14px 30px -10px rgba(21,151,168,0.45)",
@@ -235,10 +286,10 @@ export default function VerifyCode() {
                       whileTap={{
                         scale: 0.985,
                       }}
-                      className="w-full h-12 rounded-xl bg-[#063B4A] text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors hover:bg-[#032D39]"
+                      className="w-full h-12 rounded-xl bg-[#063B4A] text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors hover:bg-[#032D39] disabled:opacity-50"
                     >
-                      Lanjut
-                      <ArrowRight size={17} />
+                      {isLoading ? "Memverifikasi..." : "Lanjut"}
+                      {!isLoading && <ArrowRight size={17} />}
                     </motion.button>
                   </form>
                 </motion.div>

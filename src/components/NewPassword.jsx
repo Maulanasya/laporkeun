@@ -7,8 +7,8 @@ import {
   ArrowLeft,
   ShieldCheck,
   CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
-
 import newPasswordIllustration from "../assets/illustrations/newpassword.png";
 
 export default function NewPassword() {
@@ -17,18 +17,20 @@ export default function NewPassword() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     if (!password.trim() || !confirmPassword.trim()) {
       setError("Silakan isi semua kolom kata sandi.");
       return;
     }
 
-    if (password.length < 6) {
-      setError("Kata sandi minimal harus 6 karakter.");
+    if (password.length < 8) {
+      setError("Kata sandi minimal harus 8 karakter.");
       return;
     }
 
@@ -37,9 +39,47 @@ export default function NewPassword() {
       return;
     }
 
-    setError("");
-    setIsSuccess(true);
-    console.log({ password, confirmPassword });
+    const email = sessionStorage.getItem("reset_email");
+    const otp = sessionStorage.getItem("reset_otp");
+
+    if (!email || !otp) {
+      setError("Sesi verifikasi hilang. Silakan ulangi proses lupa password dari awal.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          otp,
+          newPassword: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Gagal memperbarui kata sandi.");
+        setIsLoading(false);
+        return;
+      }
+
+      sessionStorage.removeItem("reset_email");
+      sessionStorage.removeItem("reset_otp");
+
+      setIsLoading(false);
+      setIsSuccess(true);
+    } catch (err) {
+      console.error("Gagal terhubung ke server:", err);
+      setError("Tidak dapat terhubung ke server backend.");
+      setIsLoading(false);
+    }
   };
 
   const goToLogin = () => {
@@ -52,8 +92,6 @@ export default function NewPassword() {
 
   return (
     <div className="min-h-screen bg-[#F7FAFA] text-slate-900 font-['Poppins']">
-      
-      {/* New Password Section */}
       <main className="relative min-h-screen overflow-hidden flex items-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -79,7 +117,7 @@ export default function NewPassword() {
         <div className="relative w-full max-w-7xl mx-auto px-6 py-12 md:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             
-            {/* Illustration Component */}
+            {/* Bagian Ilustrasi */}
             <motion.div
               initial={{ opacity: 0, x: -40 }}
               animate={{ opacity: 1, x: 0 }}
@@ -140,7 +178,7 @@ export default function NewPassword() {
               </motion.div>
             </motion.div>
 
-            {/* Form Component */}
+            {/* Bagian Form */}
             <motion.div
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
@@ -185,10 +223,17 @@ export default function NewPassword() {
                         Baru ?
                       </h1>
                       <p className="text-sm text-slate-500 leading-relaxed mt-3 max-w-md">
-                        Masukkan kata sandi baru untuk akun Anda. Pastikan kata sandi mudah diingat namun tetap aman.
+                        Masukkan kata sandi baru untuk akun Anda (minimal 8 karakter). Pastikan mudah diingat namun tetap aman.
                       </p>
                     </div>
                   </div>
+
+                  {error && (
+                    <div className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2.5 text-red-600 text-xs font-medium">
+                      <AlertCircle size={16} className="shrink-0" />
+                      <span>{error}</span>
+                    </div>
+                  )}
 
                   {isSuccess ? (
                     <motion.div
@@ -204,7 +249,7 @@ export default function NewPassword() {
                           Kata Sandi Berhasil Diubah!
                         </p>
                         <p className="text-xs text-slate-600 leading-relaxed">
-                          Kata sandi akun Anda telah diperbarui. Silakan masuk menggunakan kata sandi baru Anda.
+                          Kata sandi akun Anda telah diperbarui di database. Silakan masuk menggunakan kata sandi baru Anda.
                         </p>
                       </div>
 
@@ -226,7 +271,7 @@ export default function NewPassword() {
                           htmlFor="password"
                           className="block text-xs font-semibold text-[#17343D]"
                         >
-                          Password
+                          Password Baru
                         </label>
                         <div className="relative">
                           <input
@@ -237,7 +282,7 @@ export default function NewPassword() {
                               setPassword(e.target.value);
                               if (error) setError("");
                             }}
-                            placeholder="Masukkan Password Anda"
+                            placeholder="Masukkan Password Baru"
                             className="w-full h-12 px-4 pr-12 rounded-xl border border-slate-200 bg-slate-50/70 text-sm text-slate-700 placeholder:text-slate-400 outline-none transition-all focus:bg-white focus:border-[#1597A8] focus:ring-4 focus:ring-[#1597A8]/10"
                           />
                           <button
@@ -256,7 +301,7 @@ export default function NewPassword() {
                           htmlFor="confirmPassword"
                           className="block text-xs font-semibold text-[#17343D]"
                         >
-                          Konfirmasi Kata Sandi
+                          Konfirmasi Kata Sandi Baru
                         </label>
                         <div className="relative">
                           <input
@@ -267,7 +312,7 @@ export default function NewPassword() {
                               setConfirmPassword(e.target.value);
                               if (error) setError("");
                             }}
-                            placeholder="Konfirmasi Kata Sandi Anda"
+                            placeholder="Konfirmasi Password Baru"
                             className="w-full h-12 px-4 pr-12 rounded-xl border border-slate-200 bg-slate-50/70 text-sm text-slate-700 placeholder:text-slate-400 outline-none transition-all focus:bg-white focus:border-[#1597A8] focus:ring-4 focus:ring-[#1597A8]/10"
                           />
                           <button
@@ -281,14 +326,9 @@ export default function NewPassword() {
                         </div>
                       </div>
 
-                      {error && (
-                        <p className="text-[11px] text-red-500">
-                          {error}
-                        </p>
-                      )}
-
                       <motion.button
                         type="submit"
+                        disabled={isLoading}
                         whileHover={{
                           scale: 1.01,
                           boxShadow: "0 14px 30px -10px rgba(21,151,168,0.45)",
@@ -296,10 +336,10 @@ export default function NewPassword() {
                         whileTap={{
                           scale: 0.985,
                         }}
-                        className="w-full h-12 rounded-xl bg-[#063B4A] text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors hover:bg-[#032D39]"
+                        className="w-full h-12 rounded-xl bg-[#063B4A] text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors hover:bg-[#032D39] disabled:opacity-50"
                       >
-                        Lanjut
-                        <ArrowRight size={17} />
+                        {isLoading ? "Menyimpan..." : "Simpan Kata Sandi"}
+                        {!isLoading && <ArrowRight size={17} />}
                       </motion.button>
                     </form>
                   )}
