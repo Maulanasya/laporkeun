@@ -363,7 +363,7 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="h-[78px] flex items-center justify-between">
             
-            {/* Logo */}
+            {/* Logo Component */}
             <button
               type="button"
               onClick={goToHome}
@@ -416,7 +416,7 @@ export default function Navbar() {
               </div>
             </button>
 
-            {/* Landing Page Desktop */}
+            {/* Landing Page Desktop Navigation */}
             {isHomePage && (
               <>
                 <div
@@ -443,7 +443,7 @@ export default function Navbar() {
               </>
             )}
 
-            {/* Register Desktop */}
+            {/* Register Desktop Navigation */}
             {isRegisterPage && (
               <div className="hidden md:flex items-center gap-3">
                 <span className="text-sm text-slate-500">
@@ -453,7 +453,7 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Toggle Button */}
             {hasMenu && (
               <motion.button
                 type="button"
@@ -495,7 +495,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Dropdown Menu */}
         <AnimatePresence>
           {isMobileOpen && hasMenu && (
             <motion.div

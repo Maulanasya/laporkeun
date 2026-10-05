@@ -55,7 +55,7 @@ export default function ForgotPassword() {
         <div className="relative w-full max-w-7xl mx-auto px-6 py-12 md:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             
-            {/* Illustration Section */}
+            {/* Illustration Component */}
             <motion.div
               initial={{ opacity: 0, x: -40 }}
               animate={{ opacity: 1, x: 0 }}
@@ -116,7 +116,7 @@ export default function ForgotPassword() {
               </motion.div>
             </motion.div>
 
-            {/* Form Section */}
+            {/* Form Component */}
             <motion.div
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}

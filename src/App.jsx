@@ -101,7 +101,6 @@ export default function App() {
   const [ticket, setTicket] = useState("");
   const [openFaq, setOpenFaq] = useState(null);
 
-  // Definisikan pathname di sini agar terbaca dengan benar
   const pathname = window.location.pathname;
 
   if (pathname === "/login") {
@@ -115,8 +114,6 @@ export default function App() {
   if (pathname === "/lupa-password") {
     return <ForgotPassword />;
   }
-
-  // ... sisa kode selanjutnya
 
   const handleTrackTicket = (e) => {
     e.preventDefault();
@@ -154,7 +151,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col font-['Poppins'] bg-white text-slate-900 selection:bg-cyan-100 selection:text-brand-primary overflow-x-hidden">
       
-      {/* Navbar */}
+      {/* Navbar Component */}
       <Navbar />
 
       {/* Hero Section */}
@@ -1016,7 +1013,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Footer Component */}
       <Footer />
     </div>
   );
