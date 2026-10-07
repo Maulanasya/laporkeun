@@ -111,7 +111,7 @@ export default function VerifyCode() {
             duration: 1,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full bg-[#1597A8]/[0.07] blur-3xl pointer-events-none"
+          className="absolute -top-40 -left-40 w-130 h-130 rounded-full bg-[#1597A8]/[0.07] blur-3xl pointer-events-none"
         />
 
         <motion.div
@@ -122,7 +122,7 @@ export default function VerifyCode() {
             delay: 0.2,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="absolute -bottom-52 -right-40 w-[600px] h-[600px] rounded-full bg-[#E9C46A]/[0.08] blur-3xl pointer-events-none"
+          className="absolute -bottom-52 -right-40 w-150 h-150 rounded-full bg-[#E9C46A]/8 blur-3xl pointer-events-none"
         />
 
         <div className="relative w-full max-w-7xl mx-auto px-6 py-12 md:py-16">
@@ -149,14 +149,14 @@ export default function VerifyCode() {
                     repeat: Infinity,
                     ease: "easeInOut",
                   }}
-                  className="w-[360px] h-[360px] md:w-[500px] md:h-[500px] rounded-full bg-[#1597A8]/10 blur-3xl"
+                  className="w-90 h-90 md:w-125 md:h-125 rounded-full bg-[#1597A8]/10 blur-3xl"
                 />
               </div>
 
               <motion.img
                 src={verifyIllustration}
                 alt="Ilustrasi Kode Verifikasi"
-                className="relative z-10 w-full max-w-[620px] mx-auto object-contain"
+                className="relative z-10 w-full max-w-155 mx-auto object-contain"
                 animate={{ y: [0, -8, 0] }}
                 transition={{
                   duration: 5,
@@ -200,7 +200,7 @@ export default function VerifyCode() {
               }}
               className="order-1 lg:order-2"
             >
-              <div className="w-full max-w-[500px] mx-auto lg:mx-0 lg:ml-auto">
+              <div className="w-full max-w-125 mx-auto lg:mx-0 lg:ml-auto">
                 <button
                   type="button"
                   onClick={goToForgotPassword}

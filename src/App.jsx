@@ -25,6 +25,7 @@ import Register from "./components/Register";
 import ForgotPassword from "./components/ForgotPassword"; 
 import VerifyCode from "./components/VerifyCode";
 import NewPassword from "./components/NewPassword";
+import FormLaporan from "./components/FormLaporan";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -125,6 +126,10 @@ export default function App() {
     return <NewPassword />;
   }
 
+  if (pathname === "/form-laporan") {
+    return <FormLaporan />;
+  }
+
   const handleTrackTicket = (e) => {
     e.preventDefault();
     if (!ticket.trim()) return;
@@ -167,20 +172,20 @@ export default function App() {
       {/* Hero Section */}
       <section
         id="beranda"
-        className="relative pt-[118px] pb-16 md:pt-[142px] md:pb-24 bg-white overflow-hidden"
+        className="relative pt-29.5 pb-16 md:pt-35.5 md:pb-24 bg-white overflow-hidden"
       >
         <Glow
           color="#1597A8"
           size={520}
           opacity={0.07}
-          className="top-[8%] left-[-220px]"
+          className="top-[8%] left-55"
         />
         <Glow
           color="#E9C46A"
           size={520}
           opacity={0.08}
           delay={0.2}
-          className="bottom-[8%] right-[-220px]"
+          className="bottom-[8%] right-55"
         />
 
         <div className="relative max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -304,14 +309,14 @@ export default function App() {
           color="#1597A8"
           size={420}
           opacity={0.07}
-          className="top-[8%] left-[-200px]"
+          className="top-[8%] left-50"
         />
         <Glow
           color="#E9C46A"
           size={400}
           opacity={0.08}
           delay={0.2}
-          className="bottom-[8%] right-[-200px]"
+          className="bottom-[8%] right-50"
         />
 
         <div className="relative max-w-7xl mx-auto px-6">
@@ -405,14 +410,14 @@ export default function App() {
           color="#E9C46A"
           size={480}
           opacity={0.08}
-          className="top-[-150px] right-[-150px]"
+          className="top-37.5 right-37.5"
         />
         <Glow
           color="#1597A8"
           size={440}
           opacity={0.16}
           delay={0.2}
-          className="bottom-[-140px] left-[-140px]"
+          className="bottom-35 left-35"
         />
 
         <div className="relative max-w-7xl mx-auto px-6 text-center space-y-12">
@@ -466,7 +471,7 @@ export default function App() {
                   y: -4,
                   backgroundColor: "rgba(255,255,255,0.08)",
                 }}
-                className="p-6 rounded-2xl bg-white/[0.04] border border-white/10 space-y-3 backdrop-blur-sm"
+                className="p-6 rounded-2xl bg-white/4 border border-white/10 space-y-3 backdrop-blur-sm"
               >
                 <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-brand-tertiary">
                   {item.icon}
@@ -489,7 +494,7 @@ export default function App() {
           color="#1597A8"
           size={520}
           opacity={0.06}
-          className="top-[10%] right-[-260px] hidden lg:block"
+          className="top-[10%] right-65 hidden lg:block"
         />
 
         <div className="relative max-w-7xl mx-auto px-6">
@@ -515,13 +520,13 @@ export default function App() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="flex justify-center relative min-h-[420px] items-center"
+              className="flex justify-center relative min-h-105 items-center"
             >
               <Glow color="#1597A8" size={380} opacity={0.08} centered pulse />
               <motion.img
                 src={images?.carakerja}
                 alt="Cara Kerja LaporKeun"
-                className="relative z-10 w-full max-w-[520px] object-contain"
+                className="relative z-10 w-full max-w-130 object-contain"
                 animate={{ y: [0, -10, 0] }}
                 transition={{
                   duration: 5,
@@ -602,14 +607,14 @@ export default function App() {
           color="#1597A8"
           size={440}
           opacity={0.07}
-          className="top-[6%] left-[-200px]"
+          className="top-[6%] left-50"
         />
         <Glow
           color="#E9C46A"
           size={420}
           opacity={0.08}
           delay={0.2}
-          className="bottom-[6%] right-[-200px]"
+          className="bottom-[6%] right-50"
         />
 
         <div className="relative max-w-7xl mx-auto px-6">
@@ -832,14 +837,14 @@ export default function App() {
               color="#E9C46A"
               size={360}
               opacity={0.1}
-              className="top-[-100px] right-[-100px]"
+              className="top-25 right-25"
             />
             <Glow
               color="#1597A8"
               size={280}
               opacity={0.2}
               delay={0.2}
-              className="bottom-[-80px] left-[-40px]"
+              className="bottom-20 left-10"
             />
 
             <div className="space-y-2 text-center md:text-left relative z-10">
@@ -872,14 +877,14 @@ export default function App() {
           color="#1597A8"
           size={400}
           opacity={0.07}
-          className="top-[8%] left-[-200px]"
+          className="top-[8%] left-50"
         />
         <Glow
           color="#E9C46A"
           size={400}
           opacity={0.08}
           delay={0.2}
-          className="bottom-[8%] right-[-200px]"
+          className="bottom-[8%] right-50"
         />
 
         <div className="relative max-w-7xl mx-auto px-6">
@@ -953,7 +958,7 @@ export default function App() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="hidden lg:flex justify-center items-center relative min-h-[360px]"
+              className="hidden lg:flex justify-center items-center relative min-h-90"
             >
               <Glow color="#1597A8" size={300} opacity={0.08} centered pulse />
               <motion.img
@@ -986,14 +991,14 @@ export default function App() {
               color="#E9C46A"
               size={440}
               opacity={0.1}
-              className="top-[-150px] right-[-150px]"
+              className="top-37.5 right-37.5"
             />
             <Glow
               color="#1597A8"
               size={320}
               opacity={0.2}
               delay={0.2}
-              className="bottom-[-100px] left-[-60px]"
+              className="bottom-25 left-15"
             />
 
             <div className="space-y-3 relative z-10 max-w-2xl">

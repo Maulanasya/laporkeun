@@ -22,22 +22,28 @@ const SECTION_IDS = ["fitur", "cara-kerja", "faq"];
 const SPRING = { type: "spring", stiffness: 380, damping: 30 };
 const EASE_OUT = [0.22, 1, 0.36, 1];
 
+// Link desktop. Kalau `href` diisi, dirender sebagai <a> (pindah halaman),
+// kalau tidak, dirender sebagai <button> (scroll ke section).
 function DesktopNavLink({
   label,
+  href,
   isActive,
   isHovered,
   onClick,
   onHover,
   onLeave,
 }) {
+  const Tag = href ? "a" : "button";
+  const tagProps = href ? { href } : { type: "button" };
+
   return (
-    <button
-      type="button"
+    <Tag
+      {...tagProps}
       onClick={onClick}
       onMouseEnter={onHover}
       onFocus={onHover}
       onBlur={onLeave}
-      aria-current={isActive ? "true" : undefined}
+      aria-current={isActive ? "page" : undefined}
       className={`
         relative px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors duration-300
         ${isActive ? "text-brand-tertiary" : "text-slate-600 hover:text-brand-tertiary"}
@@ -60,14 +66,18 @@ function DesktopNavLink({
           className="absolute left-4 right-4 bottom-1 z-10 h-0.5 rounded-full bg-brand-tertiary"
         />
       )}
-    </button>
+    </Tag>
   );
 }
 
-function MobileNavLink({ label, isActive, index, onClick }) {
+// Link mobile. Sama seperti desktop: `href` diisi -> <a>, kalau tidak -> <button>.
+function MobileNavLink({ label, href, isActive, index, onClick }) {
+  const Tag = href ? motion.a : motion.button;
+  const tagProps = href ? { href } : { type: "button" };
+
   return (
-    <motion.button
-      type="button"
+    <Tag
+      {...tagProps}
       onClick={onClick}
       initial={{ opacity: 0, x: -12 }}
       animate={{
@@ -80,8 +90,9 @@ function MobileNavLink({ label, isActive, index, onClick }) {
         },
       }}
       whileTap={{ scale: 0.98 }}
+      aria-current={isActive ? "page" : undefined}
       className={`
-        relative w-full text-left px-4 py-3 rounded-xl text-sm font-medium cursor-pointer transition-colors duration-300
+        relative block w-full text-left px-4 py-3 rounded-xl text-sm font-medium cursor-pointer transition-colors duration-300
         ${isActive ? "bg-cyan-50 text-brand-tertiary" : "text-slate-600 hover:bg-slate-50 hover:text-brand-tertiary"}
       `}
     >
@@ -94,7 +105,7 @@ function MobileNavLink({ label, isActive, index, onClick }) {
       )}
 
       {label}
-    </motion.button>
+    </Tag>
   );
 }
 
@@ -153,6 +164,10 @@ export default function Navbar() {
   const isRegisterPage = pathname === "/register";
   const isHomePage = pathname === "/";
   const hasMenu = isHomePage || isRegisterPage || isLoggedIn;
+
+  // Menentukan menu aktif setelah login berdasarkan halaman yang sedang dibuka
+  const isPathActive = (path) =>
+    path === "/" ? pathname === "/" : pathname.startsWith(path);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -282,7 +297,7 @@ export default function Navbar() {
         `}
       >
         <div className="max-w-7xl mx-auto px-6">
-          <div className="h-[78px] flex items-center justify-between">
+          <div className="h-19.5 flex items-center justify-between">
             
             {/* Logo */}
             <motion.button
@@ -311,36 +326,47 @@ export default function Navbar() {
             {/* Desktop Navigation */}
             {isLoggedIn ? (
               <div className="hidden md:flex items-center gap-8">
-                <div className="flex items-center gap-2">
+                <div
+                  className="flex items-center gap-1"
+                  onMouseLeave={() => setHoveredId(null)}
+                >
                   {LOGGED_IN_LINKS.map((link) => (
-                    <a
+                    <DesktopNavLink
                       key={link.id}
+                      label={link.label}
                       href={link.path}
-                      className="px-4 py-2 rounded-full text-sm font-medium text-slate-600 hover:text-brand-tertiary transition-colors"
-                    >
-                      {link.label}
-                    </a>
+                      isActive={isPathActive(link.path)}
+                      isHovered={hoveredId === link.id}
+                      onHover={() => setHoveredId(link.id)}
+                      onLeave={() => setHoveredId(null)}
+                    />
                   ))}
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <button
+                  <motion.button
                     type="button"
                     onClick={() => alert("Halaman Profil")}
-                    className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.92 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 22 }}
+                    className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 hover:border-brand-tertiary hover:text-brand-tertiary transition-[background-color,border-color,color] duration-300 cursor-pointer"
                     aria-label="Profil"
                   >
                     <User size={18} />
-                  </button>
+                  </motion.button>
 
-                  <button
+                  <motion.button
                     type="button"
                     onClick={() => setShowLogoutConfirm(true)}
-                    className="w-10 h-10 rounded-xl bg-brand-tertiary text-white flex items-center justify-center hover:bg-brand-tertiaryHover transition-colors cursor-pointer shadow-sm"
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.92 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 22 }}
+                    className="w-10 h-10 rounded-xl bg-brand-tertiary text-white flex items-center justify-center hover:bg-brand-tertiaryHover hover:shadow-lg transition-[background-color,box-shadow] duration-300 cursor-pointer shadow-sm"
                     aria-label="Keluar"
                   >
                     <LogOut size={18} />
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             ) : isHomePage ? (
@@ -418,14 +444,14 @@ export default function Navbar() {
               <div className="px-6 py-5 space-y-2">
                 {isLoggedIn ? (
                   <>
-                    {LOGGED_IN_LINKS.map((link) => (
-                      <a
+                    {LOGGED_IN_LINKS.map((link, index) => (
+                      <MobileNavLink
                         key={link.id}
+                        label={link.label}
                         href={link.path}
-                        className="block px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-cyan-50 hover:text-brand-tertiary transition-colors"
-                      >
-                        {link.label}
-                      </a>
+                        index={index}
+                        isActive={isPathActive(link.path)}
+                      />
                     ))}
                     <div className="pt-2 border-t border-slate-100 mt-3 space-y-2">
                       <button
